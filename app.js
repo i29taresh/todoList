@@ -13,10 +13,8 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-// const items = ["Buy Food", "Cook Food", "Eat Food"];
-// const workItems = [];
-
 mongoose.connect('mongodb+srv://i29taresh:CA63hw51@cluster0.ohbceb0.mongodb.net/todoListDB', {useNewUrlParser: true});
+// mongoose.connect('mongodb://127.0.0.1:27017/todoListDB', {useNewUrlParser: true});
 
 const itemSchema = new mongoose.Schema({
   name: String
@@ -24,11 +22,10 @@ const itemSchema = new mongoose.Schema({
 
 const Item = mongoose.model('Item', itemSchema);
 
-const item1 = new Item({ name: 'buy coffee' });
-const item2 = new Item({ name: 'brew coffee' });
-const item3 = new Item({ name: 'drink coffee' });
+const item1 = new Item({ name: 'Add items in the todo List' });
 
-const defaultItems= [item1, item2, item3];
+const defaultItems= [item1];
+// const defaultItems= [];
 
 const listSchema = new mongoose.Schema({
   name : String,
@@ -86,7 +83,6 @@ app.post("/delete", function(req, res){
   console.log(req.body);
 
   if(listName === "Today"){
-    console.log("yes");
     Item.findByIdAndRemove(deleteItemId, function(err){
       if(!err){
         console.log("successfully deleted checked item");
@@ -111,13 +107,16 @@ app.post("/delete", function(req, res){
 
 app.get("/:customListName", function(req, res){
   const customListName = _.capitalize(req.params.customListName);
+  if(customListName === ''){
+    res.redirect("/");
+  }
 
   List.findOne({name: customListName}, function(err, foundList){
     if(!err){
       if(!foundList){
         const list = new List({
           name : customListName,
-          items : defaultItems
+          items : []
         });
         list.save();
         res.redirect("/" + customListName);
